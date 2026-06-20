@@ -10,8 +10,8 @@ the library, add one to your tradecli, and run it — it loops on its own schedu
 and you reuse it across sessions.
 
 This repo is the **single source of truth** for both the loop **templates** and
-the **concrete skills** built from them. tradecli ships nothing of its own — it
-fetches everything from here.
+the **concrete skills** built from them. It is distributed as a Pi package, so
+tradecli can discover and load its skills directly.
 
 ```
 index.json              # catalog of every concrete skill
@@ -22,14 +22,54 @@ skills/                 # concrete, ready-to-run skills
     SKILL.md            # the complete, runnable skill (frontmatter + loop)
 ```
 
-## How a skill loads into tradecli
+## Install and use in tradecli
 
-1. tradecli reads `index.json` to list what's available.
-2. You pick one to install.
-3. tradecli stores it in your AITradingOffice as a reusable skill
-   (`create_skill`) — the stored row is the source of truth.
-4. You kick off a **run**; the skill loops on its `trigger` schedule and you can
-   re-run it any time.
+Run the installation from inside the tradecli app using Pi shell mode:
+
+```text
+!!pi install git:github.com/TradingSandbox/trader-skills
+```
+
+Reload Pi resources so the newly installed skills become available:
+
+```text
+/reload
+```
+
+Invoke a skill by name:
+
+```text
+/skill:backtest-strategy-lab
+```
+
+You can pass the task directly after the skill command:
+
+```text
+/skill:backtest-strategy-lab Backtest time-series momentum on NSE:RELIANCE using the daily timeframe.
+```
+
+`!!` runs the installation command without adding its terminal output to the
+conversation. The same installation command can also be run from a normal
+terminal without the `!!` prefix.
+
+### Update or remove
+
+From inside tradecli:
+
+```text
+!!pi update git:github.com/TradingSandbox/trader-skills
+/reload
+```
+
+To uninstall:
+
+```text
+!!pi remove git:github.com/TradingSandbox/trader-skills
+/reload
+```
+
+Pi installs the package globally by default, making its skills available across
+tradecli projects and personas.
 
 ## Skill types
 
