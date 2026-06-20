@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "skills": [
+    {
+      "name": "backtest-strategy-lab",
+      "kind": "oneshot",
+      "summary": "Backtest a curated catalog of trend, breakout, mean-reversion, volatility-expansion, and opening-range Pine strategies using TradeCLI's TradingView tools.",
+      "author": "TradingSandbox",
+      "path": "skills/backtest-strategy-lab/SKILL.md"
+    }
+  ]
+}
