@@ -2,6 +2,11 @@
   "name": "trader-skills",
   "version": "0.1.0",
   "private": true,
+  "scripts": {
+    "tools": "node scripts/list-tools.mjs",
+    "tools:check": "node scripts/check-tool-references.mjs",
+    "tools:refresh": "node scripts/refresh-tools.mjs"
+  },
   "keywords": [
     "pi-package"
   ],

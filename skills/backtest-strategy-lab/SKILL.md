@@ -6,7 +6,7 @@ mandate:
   persona: "hedgefund"
   risk_profile: "balanced"
   office_tool: "aitradingoffice_hf"
-  allowed_tools: [tv_health_check, tv_chart_get_state, tv_chart_get_visible_range, tv_chart_set_symbol, tv_chart_set_timeframe, tv_ui_open_panel, tv_data_get_strategy_results, tv_data_get_trades, tv_data_get_equity, tv_capture_screenshot, pine_get_source, pine_set_source, pine_analyze, pine_check, pine_smart_compile, pine_get_errors, pine_get_console, aitradingoffice_hf, aitradingoffice_workflows]
+  allowed_tools: [tv_health_check, tv_chart_get_state, tv_chart_get_visible_range, tv_chart_set_symbol, tv_chart_set_timeframe, tv_ui_open_panel, tv_data_get_strategy_results, tv_data_get_trades, tv_data_get_equity, tv_capture_screenshot, tv_pine_get_source, tv_pine_set_source, tv_pine_analyze, tv_pine_check, tv_pine_smart_compile, tv_pine_get_errors, tv_pine_get_console, aitradingoffice_hf, aitradingoffice_workflows]
   allowed_ledgers: []
   limits:
     max_trades_per_tick: 0
@@ -223,14 +223,15 @@ request to the smallest decision-useful subset.
 For each distinct strategy:
 
 1. Generate Pine v6 from the selected catalog contract, obtain explicit
-   existing source with `pine_get_source`, or use supplied Pine.
+   existing source with `tv_pine_get_source`, or use supplied Pine.
 2. Confirm it declares `strategy(...)`, not `indicator(...)`.
 3. Check entry, exit, sizing, pyramiding, order timing, commission, and slippage.
 4. Reject or repair lookahead, repainting, missing exits, silent zero costs,
    ambiguous fills, and changes outside the stated experimental axis.
-5. Run `pine_analyze` and `pine_check`.
-6. Inject with `pine_set_source`, compile with `pine_smart_compile`, and inspect
-   `pine_get_errors` / `pine_get_console` when compilation is unclear.
+5. Run `tv_pine_analyze` and `tv_pine_check`.
+6. Inject with `tv_pine_set_source`, compile with `tv_pine_smart_compile`, and
+   inspect `tv_pine_get_errors` / `tv_pine_get_console` when compilation is
+   unclear.
 
 Do not proceed with a strategy whose implementation cannot be reconciled with
 its stated rules.

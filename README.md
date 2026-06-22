@@ -15,6 +15,9 @@ tradecli can discover and load its skills directly.
 
 ```
 index.json              # catalog of every concrete skill
+.tradecli-tools/        # generated local tool catalog (gitignored)
+  TOOLS.md              # human-readable TradeCLI tool catalog
+  tradecli-tools.json   # machine-readable TradeCLI tool catalog
 templates/              # the loop shapes (authoring reference)
   <kind>/SKILL.md       # oneshot | scenario | routine | monitor | review
 skills/                 # concrete, ready-to-run skills
@@ -71,6 +74,47 @@ To uninstall:
 Pi installs the package globally by default, making its skills available across
 tradecli projects and personas.
 
+## TradeCLI tool catalog
+
+Skill and workflow authors can generate the complete local catalog and query it:
+
+```text
+npm run tools:refresh
+npm run tools
+npm run tools -- tradingview
+npm run tools -- --search strategy
+npm run tools:check
+```
+
+The generated files live in `.tradecli-tools/` and are ignored by Git. Use the
+exact names from `.tradecli-tools/TOOLS.md` or
+`.tradecli-tools/tradecli-tools.json` when filling a skill's
+`mandate.allowed_tools`.
+
+Tools such as `aitradingoffice_hf`, `aitradingoffice_pms`,
+`aitradingoffice_profile`, and `aitradingoffice_workflows` are multi-action
+wrappers. The catalog lists every accepted `action` beneath its wrapper. In
+`allowed_tools`, grant the wrapper name; inside the workflow, call it with the
+documented action, for example `aitradingoffice_hf` with
+`action: create_record`.
+
+The catalog is the union of tools loaded by the TradeCLI runtime. A particular
+session may expose a smaller set based on its active persona, broker setup,
+installed MCPs, authentication, and runtime configuration. Declaring a tool in
+`allowed_tools` grants a mandate permission to use it; it does not install,
+authenticate, or activate that tool.
+
+To refresh the catalog against a local TradeCLI checkout:
+
+```text
+npm run tools:refresh
+```
+
+By default the script looks for the sibling checkout at `../TradingSandbox`.
+Pass another location with `--tradecli /absolute/path/to/TradingSandbox` or the
+`TRADECLI_REPO` environment variable. The refresh command starts TradeCLI's
+tool-list runtime and may update TradeCLI's local cache.
+
 ## Skill types
 
 Every skill declares a `kind` in its frontmatter — the loop shape it follows:
@@ -89,9 +133,13 @@ Every skill declares a `kind` in its frontmatter — the loop shape it follows:
    `{{SLOT.*}}` to produce a complete, resolved skill (no placeholders left).
    Add it at `skills/<your-skill>/SKILL.md`. The frontmatter must declare
    `name`, `description`, and a `mandate` block with `kind`, `persona`,
-   `allowed_ledgers`, and `limits`.
+   `allowed_tools`, `allowed_ledgers`, and `limits`. Select the smallest useful
+   tool set from the generated `.tradecli-tools/TOOLS.md`; do not copy the whole
+   catalog into a mandate.
 2. Append an entry to `index.json` (`name`, `kind`, `summary`, `author`, `path`).
-3. Open a PR.
+3. Run `npm run tools:check` to verify that every concrete skill names tools
+   present in the generated TradeCLI catalog.
+4. Open a PR.
 
 Keep skills **paper-first** (`paper_only: true`) and conservatively limited
 unless there's a clear reason otherwise.

@@ -7,6 +7,13 @@
       "summary": "Backtest a curated catalog of trend, breakout, mean-reversion, volatility-expansion, and opening-range Pine strategies using TradeCLI's TradingView tools.",
       "author": "TradingSandbox",
       "path": "skills/backtest-strategy-lab/SKILL.md"
+    },
+    {
+      "name": "investment-committee",
+      "kind": "oneshot",
+      "summary": "Evaluate one Indian-listed equity through independent market, fundamentals, news, sentiment-proxy, bull/bear, trader, and risk-committee stages.",
+      "author": "TradingSandbox",
+      "path": "skills/investment-committee/SKILL.md"
     }
   ]
 }

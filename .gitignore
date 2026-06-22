@@ -1,3 +1,9 @@
 .DS_Store
 # Internal working doc — kept local, not published (contains local paths/notes).
 PLAN.md
+
+# Generated locally by `npm run tools:refresh`.
+.tradecli-tools/
+
+# Local helper scripts.
+/scripts/
