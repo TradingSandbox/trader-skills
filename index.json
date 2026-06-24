@@ -14,6 +14,13 @@
       "summary": "Evaluate one Indian-listed equity through independent market, fundamentals, news, sentiment-proxy, bull/bear, trader, and risk-committee stages.",
       "author": "TradingSandbox",
       "path": "skills/investment-committee/SKILL.md"
+    },
+    {
+      "name": "screener-conviction-workflow",
+      "kind": "oneshot",
+      "summary": "Run named Indian-equity screener views such as high momentum, breakout, RVOL, pullback, bounce, bearish breakdown, and sector rotation, then adapt candidates to CNC, MIS, MTF, futures, options, or index trade kinds.",
+      "author": "TradingSandbox",
+      "path": "skills/screener-conviction-workflow/SKILL.md"
     }
   ]
 }
