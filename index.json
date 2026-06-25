@@ -27,70 +27,70 @@
       "kind": "routine",
       "summary": "Run the daily Hedge Fund CEO office loop: read fund capital and risk, wake/delegate desks, allocate paper budgets, collect reports, and record the daily plan.",
       "author": "TradingSandbox",
-      "path": "skills/hedge-fund-ceo-daily-office/SKILL.md"
+      "path": "skills/hedge-fund/hedge-fund-ceo-daily-office/SKILL.md"
     },
     {
       "name": "hedge-fund-short-mis-desk",
       "kind": "routine",
       "summary": "Trade the paper Short MIS desk for intraday bearish equity setups, with same-day exits and AITradingOffice fund-book journaling.",
       "author": "TradingSandbox",
-      "path": "skills/hedge-fund-short-mis-desk/SKILL.md"
+      "path": "skills/hedge-fund/hedge-fund-short-mis-desk/SKILL.md"
     },
     {
       "name": "hedge-fund-long-mis-desk",
       "kind": "routine",
       "summary": "Trade the paper Long MIS desk for intraday bullish equity setups, with same-day exits and AITradingOffice fund-book journaling.",
       "author": "TradingSandbox",
-      "path": "skills/hedge-fund-long-mis-desk/SKILL.md"
+      "path": "skills/hedge-fund/hedge-fund-long-mis-desk/SKILL.md"
     },
     {
       "name": "hedge-fund-long-mtf-desk",
       "kind": "routine",
       "summary": "Run the paper Long MTF desk for multi-day long equity trades using fund capital, technical/fundamental checks, stops, and thesis records.",
       "author": "TradingSandbox",
-      "path": "skills/hedge-fund-long-mtf-desk/SKILL.md"
+      "path": "skills/hedge-fund/hedge-fund-long-mtf-desk/SKILL.md"
     },
     {
       "name": "hedge-fund-investor-desk",
       "kind": "routine",
       "summary": "Maintain long-horizon hedge-fund research, watchlists, position reviews, and investment thesis records without placing trades.",
       "author": "TradingSandbox",
-      "path": "skills/hedge-fund-investor-desk/SKILL.md"
+      "path": "skills/hedge-fund/hedge-fund-investor-desk/SKILL.md"
     },
     {
       "name": "hedge-fund-option-index-desk",
       "kind": "routine",
       "summary": "Trade paper index options for NIFTY/BANKNIFTY-style setups with greeks, OI, volatility, premium or margin checks, and AITradingOffice records.",
       "author": "TradingSandbox",
-      "path": "skills/hedge-fund-option-index-desk/SKILL.md"
+      "path": "skills/hedge-fund/hedge-fund-option-index-desk/SKILL.md"
     },
     {
       "name": "hedge-fund-option-stock-desk",
       "kind": "routine",
       "summary": "Trade paper single-stock options on Indian F&O names with event-aware contract selection, greeks, liquidity checks, and option records.",
       "author": "TradingSandbox",
-      "path": "skills/hedge-fund-option-stock-desk/SKILL.md"
+      "path": "skills/hedge-fund/hedge-fund-option-stock-desk/SKILL.md"
     },
     {
       "name": "hedge-fund-commodity-desk",
       "kind": "routine",
       "summary": "Trade paper commodity futures or options after resolving exact MCX/F&O contracts, session, liquidity, margin, and macro risk.",
       "author": "TradingSandbox",
-      "path": "skills/hedge-fund-commodity-desk/SKILL.md"
+      "path": "skills/hedge-fund/hedge-fund-commodity-desk/SKILL.md"
     },
     {
       "name": "hedge-fund-stock-futures-desk",
       "kind": "routine",
       "summary": "Trade paper Indian single-stock futures using trend, OI, liquidity, margin, stops, and fund-risk checks.",
       "author": "TradingSandbox",
-      "path": "skills/hedge-fund-stock-futures-desk/SKILL.md"
+      "path": "skills/hedge-fund/hedge-fund-stock-futures-desk/SKILL.md"
     },
     {
       "name": "hedge-fund-skill-improvement-review",
       "kind": "review",
       "summary": "Review daily hedge-fund AITradingOffice records, trades, P&L, desk reports, and workflow logs to produce concrete rule and skill-improvement actions.",
       "author": "TradingSandbox",
-      "path": "skills/hedge-fund-skill-improvement-review/SKILL.md"
+      "path": "skills/hedge-fund/hedge-fund-skill-improvement-review/SKILL.md"
     }
   ]
 }

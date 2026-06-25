@@ -148,6 +148,9 @@ All hedge-fund automation skills are paper-first. Trading desks write to the
 AITradingOffice hedge-fund paper book through `aitradingoffice_hf`; the CEO and
 Investor skills coordinate and research but do not place trades.
 
+The suite lives under `skills/hedge-fund/`. Skill names stay unchanged, so
+existing commands such as `/skill:hedge-fund-commodity-desk` still work.
+
 ## Contributing a skill
 
 1. Pick a loop shape from [`templates/`](templates/) and fill in every

@@ -57,6 +57,23 @@ screener: screener-conviction-workflow
 review: hedge-fund-skill-improvement-review
 ```
 
+## Desk commands
+
+When delegating, include the exact command the specialist should run as the last
+line of the task packet. Use these commands:
+
+```yaml
+short_mis: "/skill:hedge-fund-short-mis-desk"
+long_mis: "/skill:hedge-fund-long-mis-desk"
+long_mtf: "/skill:hedge-fund-long-mtf-desk"
+investor: "/skill:hedge-fund-investor-desk"
+option_index: "/skill:hedge-fund-option-index-desk"
+option_stock: "/skill:hedge-fund-option-stock-desk"
+commodity: "/skill:hedge-fund-commodity-desk"
+stock_futures: "/skill:hedge-fund-stock-futures-desk"
+review: "/skill:hedge-fund-skill-improvement-review"
+```
+
 ## Setup
 
 1. Call `aitradingoffice_hf` with `action: health`, then `fund_summary`,
@@ -190,10 +207,11 @@ Adjust weights using market context:
 
 ### 6. Delegate
 
-For each active desk, call `hedgefund_delegate` with:
+For each active desk, call `hedgefund_delegate` with a complete task packet:
 
 ```yaml
 desk_skill:
+desk_command:
 budget_notional:
 max_loss_today:
 max_open_positions:
@@ -216,10 +234,22 @@ must_check:
   - staged entry and active reduction plan
   - transaction record schema
 report_deadline:
+last_step: "Run <desk_command> and follow that specialist skill exactly."
 ```
 
 Do not delegate a desk if the fund state is unreadable, the market boundary is
 unclear, or the desk's risk would conflict with existing fund exposure.
+
+Use the desk command matching the assignment:
+
+- Short MIS tasks end with `/skill:hedge-fund-short-mis-desk`.
+- Long MIS tasks end with `/skill:hedge-fund-long-mis-desk`.
+- Long MTF tasks end with `/skill:hedge-fund-long-mtf-desk`.
+- Investor research tasks end with `/skill:hedge-fund-investor-desk`.
+- Index option tasks end with `/skill:hedge-fund-option-index-desk`.
+- Stock option tasks end with `/skill:hedge-fund-option-stock-desk`.
+- Commodity tasks end with `/skill:hedge-fund-commodity-desk`.
+- Stock futures tasks end with `/skill:hedge-fund-stock-futures-desk`.
 
 ### 7. Collect and decide
 
