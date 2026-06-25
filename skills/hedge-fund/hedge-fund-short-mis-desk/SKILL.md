@@ -6,7 +6,7 @@ mandate:
   persona: "hedgefund"
   risk_profile: "aggressive"
   office_tool: "aitradingoffice_hf"
-  allowed_tools: [groww_resolve_market_time_and_calendar, groww_curate_symbols, groww_fetch_technical_screener, groww_fetch_market_movers_and_trending_stocks_funds, groww_fetch_historical_candle_data, groww_get_historical_technical_indicators, groww_get_quotes_and_depth, groww_get_ltp, groww_calculate_equity_margin, news_fetch, stock_trend_snapshot, tv_symbol_search, tv_quote_get, tv_data_get_ohlcv, aitradingoffice_hf, aitradingoffice_workflows, hedgefund_report, watch_schedule]
+  allowed_tools: [groww_resolve_market_time_and_calendar, groww_curate_symbols, groww_fetch_technical_screener, groww_fetch_market_movers_and_trending_stocks_funds, groww_fetch_historical_candle_data, groww_get_historical_technical_indicators, groww_get_quotes_and_depth, groww_get_ltp, news_fetch, stock_trend_snapshot, tv_symbol_search, tv_quote_get, tv_data_get_ohlcv, aitradingoffice_hf, aitradingoffice_workflows, hedgefund_report, watch_schedule]
   allowed_ledgers: [equities]
   limits:
     max_trades_per_tick: 3
@@ -48,7 +48,8 @@ MIS records from AITradingOffice. Schedule the routine tick with
    - weak relative strength versus NIFTY/sector;
    - acceptable spread, depth, borrow/intraday feasibility when exposed;
    - stop above the breakdown/rejection level.
-5. Check tradeability and margin before any transaction.
+5. Check tradeability, CEO allocation, manifest notional limit, available fund
+   cash, and risk-at-stop budget before any transaction.
 6. Enter in parts. The first paper order should normally be 30-50% of intended
    short size. Add only after downside follow-through, failed reclaim, or fresh
    weak breadth confirms the trade. Reduce or cover quickly if price reclaims

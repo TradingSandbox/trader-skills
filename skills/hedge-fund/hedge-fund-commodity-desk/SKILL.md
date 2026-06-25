@@ -1,12 +1,12 @@
 ---
 name: "hedge-fund-commodity-desk"
-description: "Run the Hedge Fund Commodity desk as a daily MCX/F&O commodity paper-trading routine in AITradingOffice. Use when the CEO or user assigns capital for commodity futures or options ideas, including crude, gold, silver, natural gas, or other supported contracts; create, monitor, exit, and journal fund-book futures or option paper transactions."
+description: "Run the Hedge Fund Commodity desk as a daily MCX/F&O commodity paper-trading routine in AITradingOffice. Use when the CEO or user assigns capital for commodity futures or options ideas, including crude, gold, silver, natural gas, or other supported contracts; create, monitor, exit, and journal fund-book futures or option paper transactions without broker margin checks."
 mandate:
   kind: "routine"
   persona: "hedgefund"
   risk_profile: "balanced"
   office_tool: "aitradingoffice_hf"
-  allowed_tools: [groww_resolve_market_time_and_calendar, groww_fno_mcx_contracts_search_tool, groww_fetch_historical_candle_data, groww_get_historical_technical_indicators, groww_get_quotes_and_depth, groww_get_ltp, groww_get_open_interest_analysis, groww_get_greeks_for_fno_contract, groww_calculate_fno_margin, news_fetch, browser, tv_symbol_search, tv_quote_get, tv_data_get_ohlcv, aitradingoffice_hf, aitradingoffice_workflows, hedgefund_report, watch_schedule]
+  allowed_tools: [groww_resolve_market_time_and_calendar, groww_fno_mcx_contracts_search_tool, groww_fetch_historical_candle_data, groww_get_historical_technical_indicators, groww_get_quotes_and_depth, groww_get_ltp, groww_get_open_interest_analysis, groww_get_greeks_for_fno_contract, news_fetch, browser, tv_symbol_search, tv_quote_get, tv_data_get_ohlcv, aitradingoffice_hf, aitradingoffice_workflows, hedgefund_report, watch_schedule]
   allowed_ledgers: [futures, options]
   limits:
     max_trades_per_tick: 2
@@ -24,7 +24,7 @@ mandate:
 ## Intent
 
 Trade commodity contracts in the paper fund book only when contract identity,
-session, liquidity, margin, and macro/event context are clear.
+session, liquidity, fund exposure, and macro/event context are clear.
 
 ## Tick
 
@@ -36,19 +36,21 @@ session, liquidity, margin, and macro/event context are clear.
 4. Build a setup from trend, volatility, OI, quote/depth, and relevant macro or
    inventory/news context.
 5. Reject trades with unresolved contract month, poor depth, major event risk,
-   or margin above allocation.
-6. Use `groww_calculate_fno_margin` before futures or short-option exposure.
+   or notional/premium exposure above allocation.
+6. Confirm the paper transaction fits CEO allocation, manifest notional limit,
+   available fund cash, and max-loss budget. Do not call broker margin tools.
 7. Enter in parts. The first paper order should normally be 30-50% of intended
-   futures size, premium, or margin. Add only after contract price confirms the
+   futures size or premium exposure. Add only after contract price confirms the
    thesis and liquidity remains healthy. Reduce or exit when price rejects the
-   thesis, spread widens, margin risk rises, or a macro/event risk changes.
+   thesis, spread widens, fund exposure becomes too large, or a macro/event
+   risk changes.
 8. Create paper futures transactions for futures ideas and paper option
    transactions for option ideas.
 9. Add a transaction record with commodity, contract, expiry, thesis, initial
-   tranche percent, add rules, reduce rules, margin, stop, target, time/session
-   exit, and macro risk.
-10. Keep watching contract price, spread, margin, OI, and event risk. Add,
-   reduce, or exit through the matching AITradingOffice action based on the
+   tranche percent, add rules, reduce rules, notional exposure, premium
+   exposure when applicable, stop, target, time/session exit, and macro risk.
+10. Keep watching contract price, spread, fund exposure, OI, and event risk.
+   Add, reduce, or exit through the matching AITradingOffice action based on the
    transaction record.
 11. Report exposures, P&L, rejected ideas, and contract/session lessons.
 

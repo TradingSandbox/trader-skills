@@ -6,7 +6,7 @@ mandate:
   persona: "hedgefund"
   risk_profile: "balanced"
   office_tool: "aitradingoffice_hf"
-  allowed_tools: [groww_resolve_market_time_and_calendar, groww_curate_symbols, groww_fetch_technical_screener, groww_fetch_fundamentals_screener, groww_fetch_stocks_fundamental_data, groww_fetch_historical_candle_data, groww_get_historical_technical_indicators, groww_get_quotes_and_depth, groww_get_ltp, groww_calculate_equity_margin, news_fetch, browser, stock_trend_snapshot, tv_symbol_search, tv_quote_get, tv_data_get_ohlcv, aitradingoffice_hf, aitradingoffice_workflows, hedgefund_report, watch_schedule]
+  allowed_tools: [groww_resolve_market_time_and_calendar, groww_curate_symbols, groww_fetch_technical_screener, groww_fetch_fundamentals_screener, groww_fetch_stocks_fundamental_data, groww_fetch_historical_candle_data, groww_get_historical_technical_indicators, groww_get_quotes_and_depth, groww_get_ltp, news_fetch, browser, stock_trend_snapshot, tv_symbol_search, tv_quote_get, tv_data_get_ohlcv, aitradingoffice_hf, aitradingoffice_workflows, hedgefund_report, watch_schedule]
   allowed_ledgers: [equities]
   limits:
     max_trades_per_tick: 2
@@ -44,8 +44,8 @@ the thesis or risk budget breaks.
    - news does not contradict the long thesis;
    - stop and review condition are explicit.
 6. Size each paper trade by the smaller of CEO allocation, manifest notional,
-   fund cash, and risk at stop. Use `groww_calculate_equity_margin` when the
-   trade is MTF-style.
+   fund cash, and risk at stop. Do not call broker margin tools; this is an
+   AITradingOffice fund-book paper trade.
 7. Enter in parts. The first paper order should normally be 30-50% of intended
    size. Add only on constructive follow-through, successful retest, or thesis
    confirmation, and only if total risk at the revised stop remains within the

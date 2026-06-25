@@ -30,7 +30,7 @@ work; collect reports; write a dated plan; and preserve lessons for tomorrow.
 ## Operating principles
 
 - Capital comes only from `aitradingoffice_hf` fund state. Never assume cash,
-  buying power, margin, positions, or P&L from memory.
+  allocation room, positions, or P&L from memory.
 - The CEO allocates risk, not trades. Desks place paper fund-book transactions
   under their own mandates.
 - Unused allocation stays cash. Do not force activity because money is idle.
@@ -228,7 +228,7 @@ must_check:
   - fund allocation still available
   - candidate appears in or is reconciled against screener-conviction-workflow
   - tradeable status
-  - margin or premium requirement
+  - AITradingOffice fund allocation, notional, or premium exposure requirement
   - liquidity/depth
   - stop/invalidation
   - staged entry and active reduction plan
@@ -261,7 +261,8 @@ Read employee reports and desk records. For each proposal:
   structure whose risk is already fully defined;
 - prefer ideas traceable to the shared screener record unless the desk explains
   a fresh intraday catalyst that appeared after the screener run;
-- reject if the thesis lacks invalidation, liquidity, margin, or record plan;
+- reject if the thesis lacks invalidation, liquidity, fund allocation fit, or
+  record plan;
 - ask for revision only when the desk can fix the gap before the deadline.
 
 Write one `daily_ceo_plan` record with allocation, approvals, rejections,

@@ -1,12 +1,12 @@
 ---
 name: "hedge-fund-stock-futures-desk"
-description: "Run the Hedge Fund Stock Futures desk as a daily paper-trading routine in AITradingOffice. Use when the CEO or user assigns capital to consume screener-conviction-workflow stock futures candidates and trade Indian single-stock futures, including long or short futures based on trend, basis, liquidity, OI, and margin; create, monitor, exit, and journal fund-book futures paper transactions."
+description: "Run the Hedge Fund Stock Futures desk as a daily paper-trading routine in AITradingOffice. Use when the CEO or user assigns capital to consume screener-conviction-workflow stock futures candidates and trade Indian single-stock futures, including long or short futures based on trend, basis, liquidity, OI, and notional exposure; create, monitor, exit, and journal fund-book futures paper transactions without broker margin checks."
 mandate:
   kind: "routine"
   persona: "hedgefund"
   risk_profile: "balanced"
   office_tool: "aitradingoffice_hf"
-  allowed_tools: [groww_resolve_market_time_and_calendar, groww_curate_symbols, groww_fetch_curated_fno, groww_fetch_technical_screener, groww_fetch_historical_candle_data, groww_get_historical_technical_indicators, groww_get_open_interest_analysis, groww_get_quotes_and_depth, groww_get_ltp, groww_calculate_fno_margin, news_fetch, stock_trend_snapshot, tv_symbol_search, tv_quote_get, tv_data_get_ohlcv, aitradingoffice_hf, aitradingoffice_workflows, hedgefund_report, watch_schedule]
+  allowed_tools: [groww_resolve_market_time_and_calendar, groww_curate_symbols, groww_fetch_curated_fno, groww_fetch_technical_screener, groww_fetch_historical_candle_data, groww_get_historical_technical_indicators, groww_get_open_interest_analysis, groww_get_quotes_and_depth, groww_get_ltp, news_fetch, stock_trend_snapshot, tv_symbol_search, tv_quote_get, tv_data_get_ohlcv, aitradingoffice_hf, aitradingoffice_workflows, hedgefund_report, watch_schedule]
   allowed_ledgers: [futures]
   limits:
     max_trades_per_tick: 2
@@ -39,21 +39,22 @@ futures are cleaner than equity or options.
    - clear long or short structure on the underlying;
    - F&O liquidity and quote/depth support;
    - OI/price behavior consistent with the thesis;
-   - margin inside allocation;
+   - notional exposure inside allocation;
    - stop and target expressed in underlying/futures price.
-5. Check tradeability and margin.
+5. Check tradeability, CEO allocation, manifest notional limit, available fund
+   cash, and max-loss budget. Do not call broker margin tools.
 6. Enter in parts. The first paper order should normally be 30-50% of intended
    futures size. Add only when the underlying confirms direction, OI/volume
    supports the move, and total risk remains inside budget. Reduce or exit when
-   price fails, OI contradicts the thesis, margin risk rises, or CEO allocation
-   is reduced.
+   price fails, OI contradicts the thesis, fund exposure becomes too large, or
+   CEO allocation is reduced.
 7. Create at most two paper futures transactions through AITradingOffice.
-8. Attach a record with direction, contract, margin, notional, initial tranche
+8. Attach a record with direction, contract, notional exposure, initial tranche
    percent, add rules, reduce rules, stop, target, roll/expiry plan, risk at
    stop, and screener record id.
-9. Keep watching price movement, OI, spread, and margin. Add, reduce, or exit
+9. Keep watching price movement, OI, spread, and fund exposure. Add, reduce, or exit
    through `exit_future_transaction` when invalidated, target hit, failed add
-   condition, margin risk rises, or CEO reduces futures allocation.
+   condition, exposure risk rises, or CEO reduces futures allocation.
 10. Report positions, exposure, rejected trades, and one rule improvement.
 
 ## Guardrails

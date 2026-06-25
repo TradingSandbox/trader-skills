@@ -1,12 +1,12 @@
 ---
 name: "hedge-fund-option-stock-desk"
-description: "Run the Hedge Fund Stock Options desk as a daily paper-trading routine in AITradingOffice. Use when the CEO or user assigns capital to consume screener-conviction-workflow stock option candidates and trade single-stock options on Indian F&O names, including event-aware directional option buying or spreads; create, monitor, exit, and journal fund-book option paper transactions."
+description: "Run the Hedge Fund Stock Options desk as a daily paper-trading routine in AITradingOffice. Use when the CEO or user assigns capital to consume screener-conviction-workflow stock option candidates and trade single-stock options on Indian F&O names, including event-aware directional option buying or spreads; create, monitor, exit, and journal fund-book option paper transactions without broker margin checks."
 mandate:
   kind: "routine"
   persona: "hedgefund"
   risk_profile: "balanced"
   office_tool: "aitradingoffice_hf"
-  allowed_tools: [groww_resolve_market_time_and_calendar, groww_curate_symbols, groww_fetch_curated_fno, groww_fetch_stocks_fundamental_data, groww_fetch_historical_candle_data, groww_get_historical_technical_indicators, groww_get_open_interest_analysis, groww_get_greeks_for_fno_contract, groww_get_greeks_for_fno_symbol, groww_get_quotes_and_depth, groww_get_ltp, groww_calculate_fno_margin, news_fetch, browser, stock_trend_snapshot, tv_symbol_search, tv_quote_get, tv_data_get_ohlcv, aitradingoffice_hf, aitradingoffice_workflows, hedgefund_report, watch_schedule]
+  allowed_tools: [groww_resolve_market_time_and_calendar, groww_curate_symbols, groww_fetch_curated_fno, groww_fetch_stocks_fundamental_data, groww_fetch_historical_candle_data, groww_get_historical_technical_indicators, groww_get_open_interest_analysis, groww_get_greeks_for_fno_contract, groww_get_greeks_for_fno_symbol, groww_get_quotes_and_depth, groww_get_ltp, news_fetch, browser, stock_trend_snapshot, tv_symbol_search, tv_quote_get, tv_data_get_ohlcv, aitradingoffice_hf, aitradingoffice_workflows, hedgefund_report, watch_schedule]
   allowed_ledgers: [options]
   limits:
     max_trades_per_tick: 2
@@ -41,13 +41,13 @@ equity entries.
    - underlying trend or event thesis;
    - option liquidity and acceptable bid/ask;
    - strike/expiry selected from greeks, OI, and expected move;
-   - margin or premium inside allocation;
+   - premium exposure and maximum loss inside allocation;
    - explicit stop and event-risk plan.
 6. Prefer debit spreads or premium-defined buys unless CEO explicitly approved a
    short-premium structure.
 7. Enter in parts unless the option structure's max loss is already fully
    defined and small. The first paper order should normally be 30-50% of
-   intended premium or margin. Add only after the underlying confirms the move,
+   intended premium exposure. Add only after the underlying confirms the move,
    liquidity remains acceptable, and greeks still fit the thesis. Reduce or exit
    when the underlying fails, IV crush appears, theta decay dominates, or event
    risk changes.
@@ -59,7 +59,7 @@ underlying:
 event_or_setup:
 contract:
 greeks:
-premium_or_margin:
+premium_exposure:
 max_loss:
 initial_tranche_pct:
 add_rules:

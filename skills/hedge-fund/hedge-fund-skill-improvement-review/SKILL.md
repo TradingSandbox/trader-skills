@@ -72,7 +72,7 @@ rule_change_needed:
    - adds that increased risk without confirmation;
    - reductions or exits that were too slow after price movement changed;
    - option structures harmed by theta/IV;
-   - futures margin crowding;
+   - futures notional/exposure crowding;
    - news or event risk missed;
    - tools unavailable or data stale.
 6. Write one AITradingOffice `skill_improvement_review` record:

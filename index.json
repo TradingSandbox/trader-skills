@@ -60,7 +60,7 @@
     {
       "name": "hedge-fund-option-index-desk",
       "kind": "routine",
-      "summary": "Trade paper index options for NIFTY/BANKNIFTY-style setups with greeks, OI, volatility, premium or margin checks, and AITradingOffice records.",
+      "summary": "Trade paper index options for NIFTY/BANKNIFTY-style setups with greeks, OI, volatility, premium exposure checks, and AITradingOffice records.",
       "author": "TradingSandbox",
       "path": "skills/hedge-fund/hedge-fund-option-index-desk/SKILL.md"
     },
@@ -74,14 +74,14 @@
     {
       "name": "hedge-fund-commodity-desk",
       "kind": "routine",
-      "summary": "Trade paper commodity futures or options after resolving exact MCX/F&O contracts, session, liquidity, margin, and macro risk.",
+      "summary": "Trade paper commodity futures or options after resolving exact MCX/F&O contracts, session, liquidity, fund exposure, and macro risk.",
       "author": "TradingSandbox",
       "path": "skills/hedge-fund/hedge-fund-commodity-desk/SKILL.md"
     },
     {
       "name": "hedge-fund-stock-futures-desk",
       "kind": "routine",
-      "summary": "Trade paper Indian single-stock futures using trend, OI, liquidity, margin, stops, and fund-risk checks.",
+      "summary": "Trade paper Indian single-stock futures using trend, OI, liquidity, notional exposure, stops, and fund-risk checks.",
       "author": "TradingSandbox",
       "path": "skills/hedge-fund/hedge-fund-stock-futures-desk/SKILL.md"
     },
