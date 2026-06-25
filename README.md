@@ -127,6 +127,27 @@ Every skill declares a `kind` in its frontmatter — the loop shape it follows:
 | `monitor` | time / condition | until trigger or stop | none | Start → Tick → Handoff |
 | `review` | schedule / manual | single or recurring | none | Read → Assess → Record |
 
+## Hedge fund automation suite
+
+The hedge-fund office skills are designed to run together from AITradingOffice:
+
+- `/skill:hedge-fund-ceo-daily-office` is the entry point. It reads fund cash,
+  P&L, positions, employees, and recent records; allocates daily paper budgets;
+  runs or consumes `/skill:screener-conviction-workflow` as the shared
+  candidate-generation layer; wakes/delegates desks; and records the daily
+  office plan.
+- Desk routines handle the specialized work: Short MIS, Long MIS, Long MTF,
+  Investor, Index Options, Stock Options, Commodity, and Stock Futures. Equity
+  and F&O desks start from the shared screener output, then use their own tools
+  for validation, sizing, execution, and journaling.
+- `/skill:hedge-fund-skill-improvement-review` reads the day's office records,
+  trades, rejected ideas, and P&L to produce concrete rule and skill-improvement
+  actions for the next run.
+
+All hedge-fund automation skills are paper-first. Trading desks write to the
+AITradingOffice hedge-fund paper book through `aitradingoffice_hf`; the CEO and
+Investor skills coordinate and research but do not place trades.
+
 ## Contributing a skill
 
 1. Pick a loop shape from [`templates/`](templates/) and fill in every
