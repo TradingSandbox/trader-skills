@@ -119,28 +119,35 @@ reject_if:
 deep_check_focus:
 ```
 
-#### View: high_momentum
+#### View: high_momentum (trend continuation)
 
 Intent: find stocks already trending up with strength and liquidity.
 
-Attributes: `ADX`, `RSI`, `Perf.W`, `Perf.1M`, `average_volume_30d_calc`,
-`market_cap_basic`, `close`, `EMA20`, `EMA50`, `EMA200`, `sector`.
+Attributes: `ADX`, `RSI`, `Perf.W`, `Perf.1M`, `change`,
+`average_volume_30d_calc`, `relative_volume_10d_calc`, `market_cap_basic`,
+`close`, `EMA20`, `EMA50`, `sector`.
 
 ```json
 {
   "market": "india",
   "filter": [
     { "left": "ADX", "operation": "greater", "right": 25 },
-    { "left": "RSI", "operation": "in_range", "right": [52, 70] },
-    { "left": "Perf.W", "operation": "greater", "right": 0 },
+    { "left": "RSI", "operation": "in_range", "right": [55, 70] },
+    { "left": "Perf.W", "operation": "greater", "right": 1 },
+    { "left": "change", "operation": "greater", "right": 0.5 },
     { "left": "average_volume_30d_calc", "operation": "greater", "right": 300000 },
     { "left": "market_cap_basic", "operation": "greater", "right": 5000000000 }
   ],
-  "sort": { "sortBy": "Perf.W", "sortOrder": "desc" }
+  "sort": { "sortBy": "ADX", "sortOrder": "desc" },
+  "columns": [
+    "name", "close", "change", "ADX", "RSI", "EMA20", "EMA50",
+    "Perf.W", "Perf.1M", "relative_volume_10d_calc", "sector"
+  ],
+  "range": [0, 25]
 }
 ```
 
-Post-filter: `close > EMA20 > EMA50`; prefer `EMA50 > EMA200` when available.
+Post-filter: keep only rows where `close > EMA20 > EMA50`.
 Reject if RSI is above 75, price is extremely extended from EMA20, or the latest
 candle is a high-volume rejection.
 
@@ -174,25 +181,33 @@ already made a lower-low breakdown.
 
 Intent: find fresh leadership near or above 52-week highs.
 
-Attributes: `relative_volume_10d_calc`, `Perf.1M`, `Perf.3M`, `RSI`,
-`market_cap_basic`, `close`, `price_52_week_high`, `volume`, `ADX`, `sector`.
+Attributes: `relative_volume_10d_calc`, `Perf.1M`, `Perf.W`, `RSI`,
+`average_volume_30d_calc`, `market_cap_basic`, `close`,
+`price_52_week_high`, `ADX`, `sector`.
 
 ```json
 {
   "market": "india",
   "filter": [
     { "left": "relative_volume_10d_calc", "operation": "greater", "right": 1.5 },
-    { "left": "Perf.1M", "operation": "greater", "right": 8 },
-    { "left": "RSI", "operation": "in_range", "right": [50, 75] },
-    { "left": "market_cap_basic", "operation": "greater", "right": 8000000000 },
+    { "left": "Perf.1M", "operation": "greater", "right": 5 },
+    { "left": "Perf.W", "operation": "greater", "right": 1 },
+    { "left": "RSI", "operation": "in_range", "right": [55, 80] },
+    { "left": "average_volume_30d_calc", "operation": "greater", "right": 300000 },
+    { "left": "market_cap_basic", "operation": "greater", "right": 5000000000 },
     { "left": "close", "operation": "greater", "right": 50 }
   ],
-  "sort": { "sortBy": "relative_volume_10d_calc", "sortOrder": "desc" }
+  "sort": { "sortBy": "Perf.1M", "sortOrder": "desc" },
+  "columns": [
+    "name", "close", "change", "price_52_week_high",
+    "relative_volume_10d_calc", "RSI", "ADX", "Perf.W", "Perf.1M", "sector"
+  ],
+  "range": [0, 25]
 }
 ```
 
-Post-filter: price near or above 52-week high, volume expansion, and no obvious
-failed-breakout candle.
+Post-filter: keep only rows where `close / price_52_week_high >= 0.97`, then
+confirm volume expansion and no obvious failed-breakout candle.
 Reject if the breakout candle is too extended for the user's timeframe; label it
 `wait_for_pullback` instead of `trade_now`.
 
