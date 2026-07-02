@@ -9,6 +9,13 @@
       "path": "skills/backtest-strategy-lab/SKILL.md"
     },
     {
+      "name": "backtest-fast-sweep",
+      "kind": "oneshot",
+      "summary": "Rapidly sweep a Pine strategy across parameter grids, symbols, and timeframes — compile once, change inputs and batch-run instead of recompiling, skip the Strategy Tester UI — then shortlist finalists for backtest-strategy-lab.",
+      "author": "TradingSandbox",
+      "path": "skills/backtest-fast-sweep/SKILL.md"
+    },
+    {
       "name": "investment-committee",
       "kind": "oneshot",
       "summary": "Evaluate one Indian-listed equity through independent market, fundamentals, news, sentiment-proxy, bull/bear, trader, and risk-committee stages.",
