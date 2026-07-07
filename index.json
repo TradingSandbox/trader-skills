@@ -11,7 +11,7 @@
     {
       "name": "backtest-fast-sweep",
       "kind": "oneshot",
-      "summary": "Run deterministic TradingView-only Pine sweeps across parameter, symbol, and timeframe grids in one code-level tool call, persist AITradingOffice record/run lineage, then shortlist finalists for backtest-strategy-lab.",
+      "summary": "Start or resume durable TradingView-only backtest jobs for the compiled current-chart strategy; code chunks parameter, symbol, and timeframe grids and persists AITradingOffice lineage.",
       "author": "TradingSandbox",
       "path": "skills/backtest-fast-sweep/SKILL.md"
     },
