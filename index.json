@@ -11,7 +11,7 @@
     {
       "name": "backtest-fast-sweep",
       "kind": "oneshot",
-      "summary": "Rapidly sweep a Pine strategy across parameter grids, symbols, and timeframes — compile once, change inputs and batch-run instead of recompiling, skip the Strategy Tester UI — then shortlist finalists for backtest-strategy-lab.",
+      "summary": "Run deterministic TradingView-only Pine sweeps across parameter, symbol, and timeframe grids in one code-level tool call, persist AITradingOffice record/run lineage, then shortlist finalists for backtest-strategy-lab.",
       "author": "TradingSandbox",
       "path": "skills/backtest-fast-sweep/SKILL.md"
     },

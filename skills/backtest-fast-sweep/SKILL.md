@@ -1,12 +1,12 @@
 ---
 name: "backtest-fast-sweep"
-description: "Rapidly sweep a Pine strategy across parameter grids, symbols, and timeframes using TradeCLI's TradingView tools. Compiles the strategy once, then drives every sweep cell through instant input changes (tv_indicator_set_inputs) and batched symbol runs (tv_batch_run) — no Strategy Tester UI, no per-cell recompile. Use for fast parameter-sensitivity screens, watchlist-wide strategy screens, and quick robustness triage. This is a screening tool that ranks cells by headline metrics; promote finalists to backtest-strategy-lab for a full audit."
+description: "Rapidly sweep a Pine strategy across parameter grids, symbols, and timeframes using TradeCLI's deterministic strategy_fast_sweep tool over TradingView. Compile once, resolve TradingView input IDs, then execute the full grid in code — no Strategy Tester UI, no per-cell AI loop, and no per-cell recompile. Every invocation is linked to an AITradingOffice research record and workflow run. Use for fast parameter-sensitivity screens, watchlist-wide strategy screens, and quick robustness triage; promote finalists to backtest-strategy-lab for a full audit."
 mandate:
   kind: "oneshot"
   persona: "hedgefund"
   risk_profile: "balanced"
   office_tool: "aitradingoffice_hf"
-  allowed_tools: [tv_health_check, tv_chart_get_state, tv_chart_set_symbol, tv_chart_set_timeframe, tv_pine_set_source, tv_pine_smart_compile, tv_pine_get_errors, tv_indicator_set_inputs, tv_batch_run, tv_data_get_strategy_results, tv_data_get_trades, tv_data_get_equity, aitradingoffice_hf, aitradingoffice_workflows]
+  allowed_tools: [tv_health_check, tv_chart_get_state, tv_chart_set_symbol, tv_chart_set_timeframe, tv_pine_set_source, tv_pine_smart_compile, tv_pine_get_errors, tv_data_get_indicator, tv_indicator_set_inputs, tv_data_get_strategy_results, tv_data_get_trades, tv_data_get_equity, strategy_fast_sweep, aitradingoffice_hf, aitradingoffice_workflows]
   allowed_ledgers: []
   limits:
     max_trades_per_tick: 0
@@ -24,9 +24,11 @@ mandate:
 ## Intent
 
 Screen a Pine strategy across many parameter, symbol, and timeframe cells as
-fast as TradingView can recalculate. Rank cells by headline metrics, pull trade
-evidence only for the leaders, and hand finalists to `backtest-strategy-lab`
-for the slow, audited pass.
+fast as TradingView can recalculate. AI defines the experiment once;
+`strategy_fast_sweep` executes and ranks the cells in deterministic code. Pull
+trade evidence only for the leaders, persist the experiment and execution
+lineage in AITradingOffice, and hand finalists to `backtest-strategy-lab` for
+the slow, audited pass.
 
 ## Relationship to backtest-strategy-lab
 
@@ -41,7 +43,8 @@ is a shortlist plus the instruction to lab-test the survivors.
 
 ## The speed contract
 
-Every run must obey these rules — they are what makes the sweep fast:
+Every run must obey these rules — they are what makes the sweep fast and
+reproducible:
 
 1. **Compile exactly once per strategy source.** `tv_pine_set_source` +
    `tv_pine_smart_compile` is the only slow step. Every parameter you intend
@@ -52,22 +55,25 @@ Every run must obey these rules — they are what makes the sweep fast:
    `tv_data_get_equity` read the strategy's report data directly from the
    chart model; no UI is required. `tv_pine_set_source` opens the Pine
    Editor on its own.
-3. **Parameter cells**: call `tv_indicator_set_inputs` with the strategy's
-   `entity_id` (from `tv_chart_get_state`, fetched once after compiling),
-   then read `tv_data_get_strategy_results`. TradingView recalculates the
-   whole backtest on an input change.
-4. **Symbol / timeframe cells**: call `tv_batch_run` with
-   `action: "get_strategy_results"` and the symbol/timeframe lists — one
-   call covers the whole grid. Set `delay_ms` to at least `1500` so each
-   combo finishes recalculating before its metrics are read.
+3. **Resolve inputs once.** Call `tv_data_get_indicator` with the strategy's
+   `entity_id` and map requested Pine inputs to the actual TradingView IDs
+   (`in_0`, `in_1`, and so on). Never guess an ID. If a requested axis cannot
+   be mapped, stop before running the sweep and report the available IDs.
+4. **Execute the grid once.** Call `strategy_fast_sweep` exactly once per
+   compiled strategy/cost level with the resolved input-ID grid plus all
+   requested symbols and timeframes. The tool owns the Cartesian product,
+   chart changes, recalculation polling, stale-report detection, ranking, and
+   restoration. Never hand-roll a per-cell tool loop around
+   `tv_indicator_set_inputs` or `tv_batch_run`.
 5. **Read only headline metrics per cell.** Pull `tv_data_get_trades` and
    `tv_data_get_equity` only for the top-ranked cells (at most 3).
-6. **Guard against stale reads.** Recalculation is asynchronous. After every
-   `tv_indicator_set_inputs` or `tv_chart_set_symbol`, wait briefly, then
-   confirm the metrics actually changed versus the previous cell (total
-   trades or net profit will almost always differ). If two consecutive cells
-   return byte-identical metrics, re-read once before accepting; if still
-   identical, mark the later cell `suspect_stale` rather than trusting it.
+   `tv_indicator_set_inputs` is allowed after the sweep solely to restore one
+   of those finalists for evidence collection, never to execute the grid.
+6. **Trust the runner's classifications, not optimistic inference.** The
+   runner accepts a changed report only after two identical reads of the new
+   fingerprint. Preserve every `thin_sample`, `suspect_stale`, and
+   `no_result` count in the research record; never silently reinterpret or
+   drop them.
 
 ## What cannot be swept without recompiling
 
@@ -101,12 +107,16 @@ inputs.
 
 ## Hard limits
 
-- At most **36 cells** per invocation (cells are cheap; reading them is not
-  free — each result still costs context).
+- At most **1,000 cells** per synchronous `strategy_fast_sweep` invocation.
+  The tool returns a compact leaderboard rather than streaming every cell
+  through model context. Split larger grids into separate workflow runs.
 - At most **3 recompiles** per invocation (initial + 2 cost/sizing levels).
 - Never place or modify a trade. `allowed_ledgers` is empty.
 - Never call `pine_save` or `pine_publish`.
 - Rank by robustness-aware criteria, never by net profit alone.
+- Every invocation must have both an employee-owned AITradingOffice research
+  record and a workflow run. If office persistence is unavailable, the sweep
+  may still finish but its report must be labeled `not_persisted`.
 
 ## Intake
 
@@ -117,32 +127,59 @@ objective: parameter_sensitivity | symbol_screen | timeframe_screen | cost_stres
 strategy:
   id: time-series-momentum
   source: catalog | current_chart | supplied_pine
-parameter_grid:            # swept via tv_indicator_set_inputs
-  fast_len: [40, 50, 60]
-  slow_len: [150, 200, 250]
-symbols: [NSE:RELIANCE]    # swept via tv_batch_run
+parameter_grid:            # passed once to strategy_fast_sweep
+  in_0: [40, 50, 60]       # actual IDs resolved after compile
+  in_1: [150, 200, 250]
+parameter_labels: {in_0: fast_len, in_1: slow_len}
+symbols: [NSE:RELIANCE]
 timeframes: [D]
 cost_levels: []            # each extra level = one recompile
-rank_by: profit_factor_with_drawdown_penalty
-max_cells: 36
+rank_by: drawdown_adjusted_profit_factor
+max_cells: 1000
 ```
 
-If both a parameter grid and multiple symbols are requested, sweep parameters
-on the first symbol, pick the best surviving parameter set, then batch-run
-that one set across the remaining symbols. State this reduction before
-running. If the request would exceed `max_cells`, propose the smallest
-decision-useful subset.
+The runner executes the full parameter × symbol × timeframe Cartesian product;
+do not reduce it to "optimize one symbol, then test the winner elsewhere"
+unless the user explicitly requests that cheaper approximation. Calculate the
+cell count before running. If it exceeds `max_cells`, split it into explicit
+workflow runs or propose the smallest decision-useful subset.
 
 ## Workflow
 
-### 1. Preflight (once)
+### 1. Establish office lineage (once)
 
-1. If invoked as an AITradingOffice run, call `get_run` first and preserve
-   its identifiers, params, and existing log.
-2. `tv_health_check` — stop cleanly if TradingView Desktop is unavailable.
-3. `tv_chart_set_symbol` / `tv_chart_set_timeframe` to the base cell.
+Every sweep gets a research record plus a workflow run before TradingView work
+begins.
 
-### 2. Compile (once per strategy / cost level)
+1. Resolve the acting hedge-fund employee and book from pane context. If they
+   cannot be resolved, stop and ask for `employee_id` / `book_id`.
+2. If the caller supplied `skill_id` + `run_id`, call
+   `aitradingoffice_workflows.get_run`, preserve its params/log, and update it
+   to `running`.
+3. Otherwise list workflow skills and find `backtest-fast-sweep`. Create the
+   `oneshot` skill when absent, then create a run after creating the experiment
+   record below.
+4. Reuse the run's `params.record_id` when it points to the intended experiment;
+   otherwise create one employee-owned research record titled
+   `backtest-fast-sweep: <strategy id>`:
+   - `setup`: compact JSON containing objective, source/source hash when known,
+     requested grid, symbols, timeframes, cost levels, ranking rule, and
+     history caveat;
+   - `hypothesis`: the user's pre-test hypothesis plus `status: pending`.
+5. For a newly-created workflow run, put the resulting `record_id` and the
+   complete sweep specification in `params`, then update the run to `running`.
+6. Treat `(persona, employee_id, skill_id, run_id)` as the canonical job
+   identity; include the `record_id` in every subsequent run-log entry.
+
+If record/run creation fails, continue only when the user asked for an ad-hoc
+sweep, and mark the final result `not_persisted`.
+
+### 2. TradingView preflight (once)
+
+1. `tv_health_check` — on failure, update the run to `failed` and stop.
+2. `tv_chart_set_symbol` / `tv_chart_set_timeframe` to the base cell.
+
+### 3. Compile (once per strategy / cost level)
 
 1. Generate or accept the Pine source per the contract above.
 2. `tv_pine_set_source`, then `tv_pine_smart_compile`; on failure read
@@ -150,63 +187,71 @@ decision-useful subset.
 3. `tv_chart_get_state` — record the strategy's `entity_id` and confirm no
    other strategy is on the chart (two strategies make results ambiguous;
    remove or stop).
-4. Read baseline `tv_data_get_strategy_results` and record it as cell 0.
+4. Call `tv_data_get_indicator(entity_id)` and read the actual input IDs and
+   current values. `strategy_fast_sweep` accepts IDs, not Pine variable names.
+   For supplied/current-chart strategies, require an explicit
+   `{input_id: values}` grid from the caller after showing the available IDs.
+   For a generated strategy, preserve the author-declared label-to-ID mapping
+   alongside the generated input order; if that mapping cannot be established
+   unambiguously, stop rather than guessing. Store the verified mapping in the
+   experiment record.
+5. Read baseline `tv_data_get_strategy_results` for the experiment record.
 
-### 3. Sweep
+### 4. Sweep (one deterministic call per cost level)
 
-For a **parameter grid**: iterate cells in a fixed documented order; per
-cell call `tv_indicator_set_inputs` with only that cell's changed inputs,
-apply the stale-read guard, then store the headline metrics.
-
-For a **symbol or timeframe grid**: one `tv_batch_run` with
-`action: "get_strategy_results"`, `delay_ms >= 1500`. Cells returning
-errors or empty metrics are recorded as `no_result`, never dropped.
-
-For **cost levels**: repeat step 2 with the changed `strategy(...)`
-constants, then rerun the winning sweep cells inside that level.
-
-### 4. Record each cell
+Call `strategy_fast_sweep` with:
 
 ```yaml
-cell_id:
-axis_values: {}            # exactly what changed vs baseline
-metrics:
-  net_profit_pct:
-  total_trades:
-  win_rate:
-  profit_factor:
-  max_drawdown:
-status: completed | no_result | suspect_stale
+entity_id: <compiled strategy entity id>
+grid: {in_0: [40, 50, 60], in_1: [150, 200, 250]}
+symbols: [NSE:RELIANCE]
+timeframes: [D]
+rank_by: drawdown_adjusted_profit_factor
+min_trades: 20
+top_n: 10
+max_cells: 1000
 ```
 
-Use `not_returned` for unavailable fields.
+Do not issue per-cell TradingView calls. Preserve the runner's totals,
+classifications, restoration flag, and leaderboard exactly as returned.
 
-### 5. Rank and spot-check
+For **cost levels**: repeat step 3 with the changed `strategy(...)`
+constants, then rerun the winning sweep cells inside that level.
 
-1. Discard cells with fewer than 20 trades (report them as `thin_sample`).
-2. Rank the rest by the declared criterion; a sane default is profit factor
-   penalized by max drawdown, with ties broken toward more trades.
-3. For at most the top 3 cells, pull `tv_data_get_trades` (up to 50) and
+### 5. Spot-check the ranked leaders
+
+1. Do not re-rank cells in model reasoning; use the runner's deterministic
+   ranking. `thin_sample`, `suspect_stale`, and `no_result` cells are not
+   finalists.
+2. For at most the top 3 cells, restore that cell's symbol/timeframe/inputs,
+   allow recalculation, then pull `tv_data_get_trades` (up to 50) and
    `tv_data_get_equity`; flag any cell where a few trades dominate profit,
    losses are implausibly absent, or the trade list contradicts the
    headline metrics.
-4. Flag parameter cliffs: a top cell whose neighboring cells are materially
+3. Flag parameter cliffs: a top cell whose neighboring returned cells are materially
    worse is fragile — say so explicitly.
 
 ### 6. Persist and finish
 
-1. Create one employee-owned AITradingOffice research record with the
-   sweep definition, the full ranked cell table, flags, and the shortlist.
-2. If invoked as a workflow run, write the result packet and record id into
-   the run log, then mark it `done`.
-3. If persistence fails, return the report marked `not_persisted`.
+1. Update the existing experiment record — do not create a second success
+   record. Keep `setup` as the reproducibility specification and write compact
+   result JSON into `hypothesis`: status, canonical job identity, TradingView
+   entity id, baseline, cell totals, classifications, restoration flag,
+   leaderboard, spot-check flags, shortlist, and tested-scope caveat.
+2. Append the same compact result packet plus `record_id` to the workflow run
+   log and mark it `done`.
+3. On any terminal error, update the record with `status: failed`, append the
+   stage/error to the run log, and mark the run `failed`.
+4. If final persistence fails after a successful sweep, return the report
+   marked `not_persisted`; never claim the job is durably complete.
 
 ## Output
 
-Return: the sweep definition (strategy, grid, history caveat), the ranked
-cell table, spot-check findings on the leaders, fragility flags, the
-shortlist (0–3 cells), and the explicit next step — run
-`backtest-strategy-lab` on the shortlist for an audited verdict.
+Return: the canonical job identity, `record_id`, sweep definition (strategy,
+grid, history caveat), runner totals/classifications, compact leaderboard,
+spot-check findings, fragility flags, shortlist (0–3 cells), persistence
+status, and the explicit next step — run `backtest-strategy-lab` on the
+shortlist for an audited verdict.
 
 Always end with the tested scope: TradingView loaded history only, headline
 metrics per cell, spot-checked leaders only, screening — not validation.
