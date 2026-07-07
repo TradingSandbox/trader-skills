@@ -29,8 +29,8 @@ does not write, repair, compile, save, or publish Pine and does not call raw
 TradingView or AITradingOffice tools. The `backtest` tool owns those mechanics
 and persists the complete job.
 
-This is fast screening, not proof of edge. TradingView is the only simulator;
-results cover its loaded chart history and standard backtest model.
+This is fast screening, not proof of edge. TradingView is the only simulator.
+The default test horizon is the most recent 365 days through Deep Backtesting.
 
 ## Tool boundary
 
@@ -60,11 +60,14 @@ sweep_parameters:                            # optional; arrays form a Cartesian
   "Entry mode": [breakout, pullback, hybrid]
   "Swing length": [10, 20, 30]
 symbols: [NSE:RELIANCE]                      # optional; current symbol by default
-timeframes: [D]                              # optional; current timeframe by default
+timeframes: [D]                              # candle resolution; current chart by default
+horizon: last_365d                           # historical range; one year by default
+# date_from: 2024-01-01                      # optional custom range (requires date_to)
+# date_to: 2025-12-31
 rank_by: drawdown_adjusted_profit_factor
 min_trades: 20
 finalists: 3
-chunk_size: 27
+chunk_size: 5
 max_cells: 1000
 employee_id: 7                                # omit when pane context provides it
 book_id: 3                                    # omit when pane context provides it
@@ -78,10 +81,19 @@ the cell count.
 
 Use these defaults unless the user overrides them:
 
-- current chart symbol and timeframe;
+- current chart symbol and candle timeframe;
+- `horizon: last_365d` (one year of Deep Backtesting history);
 - `rank_by: drawdown_adjusted_profit_factor`;
-- `min_trades: 20`, `finalists: 3`, `chunk_size: 27`;
+- `min_trades: 20`, `finalists: 3`;
+- `chunk_size: 5` for historical-range jobs (`27` only for `standard_chart`);
 - `max_cells: 1000`.
+
+Keep candle resolution and test horizon distinct. `timeframes: [60, D, W]`
+tests different bar sizes. `horizon` controls historical coverage and accepts
+`last_7d`, `last_30d`, `last_90d`, `last_365d`, `entire_history`, or
+`standard_chart`. Use `date_from` plus `date_to` for a custom regime; they
+override the preset. Use `standard_chart` only when the user explicitly wants
+whatever history is currently loaded on the chart.
 
 Calculate the conceptual cell count as:
 
@@ -108,6 +120,7 @@ fixed_parameters:
 sweep_parameters:
   "Entry mode": [breakout, pullback, hybrid]
   "Swing length": [10, 20, 30]
+horizon: last_365d
 rank_by: drawdown_adjusted_profit_factor
 ```
 
@@ -139,7 +152,8 @@ stop the job.
 Report:
 
 1. canonical `job_id`, research `record_id`, and workflow run ID;
-2. tested strategy, symbols, timeframes, fixed values, and swept axes;
+2. tested strategy, symbols, candle timeframes, historical horizon, fixed
+   values, and swept axes;
 3. completed/total chunks and cell classifications;
 4. the deterministic leaderboard and ranking rule;
 5. whether the winner is stable across nearby parameter values and symbols;
@@ -152,4 +166,5 @@ one isolated peak. Recommend an out-of-sample or walk-forward pass before any
 paper deployment.
 
 Always end with the tested scope: current compiled Pine strategy, TradingView
-standard backtest and loaded history, screening rather than validation.
+Deep Backtesting range (or explicit standard-chart opt-out), screening rather
+than validation.
