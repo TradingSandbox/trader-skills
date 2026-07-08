@@ -1,6 +1,6 @@
 ---
 name: "backtest-fast-sweep"
-description: "Run durable, resumable TradingView-only backtests through TradeCLI's high-level backtest tool. Use when a compiled current-chart strategy needs a baseline, parameter sweep, chronological holdout, or walk-forward validation without generating or rewriting Pine. The tool keeps parameter selection inside training windows, evaluates finalists on untouched test windows, chunks work below runtime limits, and stores the job in AITradingOffice. This skill gathers the experiment choices, starts or resumes the job, and explains screening versus validation results."
+description: "Run durable, resumable TradingView-only backtests through TradeCLI's high-level backtest tool. Use when a compiled current-chart strategy needs parameter screening, holdout or walk-forward validation, regime and execution-cost stress tests, finalist trade/equity diagnostics, replay checks, or a paper-candidate readiness verdict. The tool keeps selection inside training windows, evaluates finalists afterward, never rewrites Pine or places trades, and persists the job in AITradingOffice."
 mandate:
   kind: "oneshot"
   persona: "hedgefund"
@@ -71,6 +71,13 @@ validation_mode: holdout                       # none | holdout | walk_forward
 out_of_sample_pct: 20                          # holdout default
 # walk_forward_folds: 3                        # walk-forward default
 # initial_train_pct: 50                        # expanding first training window
+regime_windows:
+  - {name: crash, from: 2020-03-01, to: 2020-06-30}
+cost_scenarios:
+  - {name: high_cost, commission_value: 0.10, slippage: 4}
+finalist_diagnostics: true
+replay_bars: 100
+create_paper_candidate: true                  # verdict only; never trades
 chunk_size: 5
 max_cells: 1000
 employee_id: 7                                # omit when pane context provides it
@@ -103,6 +110,16 @@ Choose validation deliberately:
 
 Never use out-of-sample results to alter parameters inside the same job. If a
 test result inspires a new grid, treat that as a new hypothesis and new job.
+
+Run post-selection checks only on finalists:
+
+- use named `regime_windows` for crashes, trends, and sideways periods;
+- use realistic and adverse `cost_scenarios` without ranking low costs as an
+  optimizable parameter;
+- enable `finalist_diagnostics` to inspect trade concentration and equity;
+- enable `replay_bars` as an additional forward-style chart check;
+- use `create_paper_candidate` only for an auditable readiness verdict. It
+  never authorizes or places a paper trade.
 
 Keep candle resolution and test horizon distinct. `timeframes: [60, D, W]`
 tests different bar sizes. `horizon` controls historical coverage and accepts
@@ -140,6 +157,8 @@ sweep_parameters:
 horizon: last_365d
 validation_mode: holdout
 out_of_sample_pct: 20
+finalist_diagnostics: true
+create_paper_candidate: true
 rank_by: drawdown_adjusted_profit_factor
 ```
 
@@ -179,7 +198,9 @@ Report:
    and their untouched out-of-sample results;
 6. whether the winner is stable across nearby parameters, folds, and symbols;
 7. any thin samples or missing results;
-8. the next validation step.
+8. regime, cost, trade/equity, and replay findings when requested;
+9. paper-candidate status and every failed readiness criterion;
+10. the next validation step.
 
 Do not claim that the top cell is a deployable strategy. A useful winner has
 enough trades, tolerable drawdown, and a neighborhood of similar results—not
