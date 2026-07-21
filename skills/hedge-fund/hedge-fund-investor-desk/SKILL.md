@@ -29,7 +29,8 @@ Research and reporting only. Do not call `strategy`, `enter_trade`,
 The trigger above is policy metadata, not an installed schedule. Use
 `watch_schedule` only on an explicit request; it is interval-based and remains
 alive only while the scheduler owns the pane. A workflow row stores state but
-does not execute this skill.
+does not execute this skill. Its prompt must begin exactly with
+`/skill:hedge-fund-investor-desk` so every tick reloads this mandate.
 
 ## Tick
 

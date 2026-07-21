@@ -26,7 +26,8 @@ mandate:
 
 One invocation is one review. The trigger is policy metadata only. On explicit
 request, `watch_schedule` may install an interval schedule while a scheduler
-owns the pane; it cannot guarantee an exact cron time or offline execution.
+owns the pane; it cannot guarantee an exact cron time or offline execution. Its
+prompt must begin exactly with `/skill:hedge-fund-skill-improvement-review`.
 Workflow records persist review state but do not invoke skills. This review may
 recommend edits, but cannot modify package files or silently change mandates.
 

@@ -28,7 +28,9 @@ One manual invocation is one office tick. The frontmatter trigger is policy
 metadata; loading this skill does not install a cron job. Only when the user
 explicitly requests recurring review may `watch_schedule` create an interval
 schedule (minimum one minute), and it runs only while a scheduler owns the
-pane. Do not promise exact weekday/08:45 execution or offline survival.
+pane. The scheduled prompt must begin exactly with
+`/skill:hedge-fund-ceo-daily-office`. Do not promise exact weekday/08:45
+execution or offline survival.
 AITradingOffice workflow rows persist state and `next_run_at`; they do not
 execute another skill by themselves.
 

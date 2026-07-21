@@ -46,7 +46,8 @@ trade-ledger path is `strategy` to `enter_trade` to `exit_trade`.
 4. The manifest trigger is schedule metadata, not a live cron. A manual
    invocation executes one tick. Call `watch_schedule` only when the user
    explicitly asks for repetition; it creates an in-process interval that
-   fires only while the current scheduler/runtime remains alive.
+   fires only while the current scheduler/runtime remains alive. Its prompt
+   must begin exactly with `/skill:hedge-fund-option-stock-desk`.
 
 ## Tick
 
