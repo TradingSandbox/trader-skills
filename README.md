@@ -4,10 +4,10 @@ A community library of **ready-to-run trading skills** for
 [tradecli](https://github.com/TradingSandbox/TradingSandbox).
 
 Each skill is a concrete, fully-resolved **mandate** — a goal-directed loop
-(thesis → execute → monitor → review → close) that reuses tradecli's existing
-tools to run a scenario, a hypothesis backtest, a routine, or a monitor. Browse
-the library, add one to your tradecli, and run it — it loops on its own schedule
-and you reuse it across sessions.
+(thesis → execute → monitor → review → close) that reuses TradeCLI's current
+tools to run a scenario, hypothesis backtest, routine, or review. A manual
+invocation runs one tick. Trigger frontmatter is policy metadata; it does not
+silently install a scheduler or keep a skill alive while TradeCLI is offline.
 
 This repo is the **single source of truth** for both the loop **templates** and
 the **concrete skills** built from them. It is distributed as a Pi package, so
@@ -25,7 +25,41 @@ skills/                 # concrete, ready-to-run skills
     SKILL.md            # the complete, runnable skill (frontmatter + loop)
 ```
 
-## Install and use in tradecli
+## Use in TradeCLI
+
+Current TradeCLI releases bootstrap a compatible Pi package on first run and
+keep it in Pi's normal package settings, so install, update, remove, and reload
+remain dynamic. A matching embedded snapshot is used when that first install is
+offline or unavailable, and by packaged binaries as the recovery fallback.
+TradeCLI validates the package's compatibility contract and safety manifests
+before allowing its same-name workflows to become authoritative.
+
+TradeCLI exposes only the skills compatible with the active India Hedge Fund
+role (`ceo`, `investor`, or `trader`). All package skills are present in the
+release; role filtering prevents a research pane from receiving an execution
+mandate or a trader pane from impersonating the CEO.
+
+Invoke a compatible skill by name:
+
+```text
+/skill:backtest-strategy-lab
+```
+
+Pass the task after the command when useful:
+
+```text
+/skill:backtest-strategy-lab Backtest time-series momentum on NSE:RELIANCE using the daily timeframe.
+```
+
+The same command path is used by the interactive TUI, RPC/Operator sessions,
+and delegated employee tasks. TradeCLI preserves the mandate manifest during
+expansion and intersects its `allowed_tools` and entry limits with the active
+persona's already-restricted tool surface.
+
+### Standalone Pi installation
+
+For a Pi environment that does not ship this TradeCLI release, install the
+package manually:
 
 Run the installation from inside the tradecli app using Pi shell mode:
 
@@ -37,18 +71,6 @@ Reload Pi resources so the newly installed skills become available:
 
 ```text
 /reload
-```
-
-Invoke a skill by name:
-
-```text
-/skill:backtest-strategy-lab
-```
-
-You can pass the task directly after the skill command:
-
-```text
-/skill:backtest-strategy-lab Backtest time-series momentum on NSE:RELIANCE using the daily timeframe.
 ```
 
 `!!` runs the installation command without adding its terminal output to the
@@ -71,8 +93,9 @@ To uninstall:
 /reload
 ```
 
-Pi installs the package globally by default, making its skills available across
-tradecli projects and personas.
+Pi installs the package globally by default. Standalone Pi does not provide
+TradeCLI's persona filter, AITradingOffice context, or manifest dispatch guard;
+the skill still cannot use tools the host has not exposed.
 
 ## TradeCLI tool catalog
 
@@ -123,7 +146,7 @@ Every skill declares a `kind` in its frontmatter — the loop shape it follows:
 |---|---|---|---|---|
 | `oneshot` | manual | single run | optional (≤1 trade) | Run → artifact → stop |
 | `scenario` | event / kickoff | episodic, self-terminating | yes | Open → Tick(days) → Close |
-| `routine` | cron | habitual, indefinite | optional | Setup → Tick(repeat) → Stop-on-request |
+| `routine` | policy metadata / manual tick | habitual | optional | Setup → Tick → persist next state |
 | `monitor` | time / condition | until trigger or stop | none | Start → Tick → Handoff |
 | `review` | schedule / manual | single or recurring | none | Read → Assess → Record |
 
@@ -133,8 +156,8 @@ The hedge-fund office skills are designed to run together from AITradingOffice:
 
 - `/skill:hedge-fund-ceo-daily-office` is the entry point. It reads fund cash,
   P&L, positions, employees, and recent records; allocates daily paper budgets;
-  runs or consumes `/skill:screener-conviction-workflow` as the shared
-  candidate-generation layer; wakes/delegates desks; and records the daily
+  delegates or consumes `/skill:screener-conviction-workflow` as the shared
+  candidate-generation layer; routes individual desks; and records the daily
   office plan.
 - Desk routines handle the specialized work: Short MIS, Long MIS, Long MTF,
   Investor, Index Options, Stock Options, Commodity, and Stock Futures. Equity
@@ -144,9 +167,13 @@ The hedge-fund office skills are designed to run together from AITradingOffice:
   trades, rejected ideas, and P&L to produce concrete rule and skill-improvement
   actions for the next run.
 
-All hedge-fund automation skills are paper-first. Trading desks write to the
-AITradingOffice hedge-fund paper book through `aitradingoffice_hf`; the CEO and
-Investor skills coordinate and research but do not place trades.
+All hedge-fund automation skills are paper-only. Trading desks may enter only
+through `strategy` → exact returned payload → `enter_trade`, and settle through
+`exit_trade`; `aitradingoffice_hf` is read/roster/research-record state, not a
+transaction-write bypass. CEO and Investor skills coordinate and research but
+do not place trades. Current option execution is restricted to single-leg long
+calls/puts, commodity execution to supported futures, and MTF-style research is
+booked as unlevered CNC paper equity because no margin model exists.
 
 The suite lives under `skills/hedge-fund/`. Skill names stay unchanged, so
 existing commands such as `/skill:hedge-fund-commodity-desk` still work.
@@ -156,7 +183,7 @@ existing commands such as `/skill:hedge-fund-commodity-desk` still work.
 1. Pick a loop shape from [`templates/`](templates/) and fill in every
    `{{SLOT.*}}` to produce a complete, resolved skill (no placeholders left).
    Add it at `skills/<your-skill>/SKILL.md`. The frontmatter must declare
-   `name`, `description`, and a `mandate` block with `kind`, `persona`,
+   `name`, `description`, and a `mandate` block with `kind`, `persona`, `roles`,
    `allowed_tools`, `allowed_ledgers`, and `limits`. Select the smallest useful
    tool set from the generated `.tradecli-tools/TOOLS.md`; do not copy the whole
    catalog into a mandate.

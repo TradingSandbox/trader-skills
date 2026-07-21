@@ -1,18 +1,19 @@
 ---
 name: "hedge-fund-skill-improvement-review"
-description: "Review the hedge fund's AITradingOffice records, trades, P&L, desk reports, rejected ideas, and workflow logs to improve the automated hedge-fund skill system. Use after a trading day or week to identify what worked, what failed, which desk rules should change, and what concrete edits or playbook updates should be made. This is records-only and never trades."
+description: "Review a Hedge Fund book's office records, employee reports, transactions, positions, P&L, and workflow logs to propose evidence-backed process or skill improvements. Use for post-session review; it never trades or edits installed skill files."
 mandate:
   kind: "review"
   persona: "hedgefund"
+  roles: [ceo, investor]
   risk_profile: "conservative"
   office_tool: "aitradingoffice_hf"
-  allowed_tools: [groww_resolve_market_time_and_calendar, aitradingoffice_hf, aitradingoffice_workflows, hedgefund_report, watch_schedule]
+  allowed_tools: [aitradingoffice_hf, aitradingoffice_workflows, hedgefund_report, watch_schedule]
   allowed_ledgers: []
   limits:
     max_trades_per_tick: 0
     max_notional: 0
     paper_only: true
-  trigger: { kind: cron, expr: "35 16 * * 1-5", tz: "Asia/Kolkata" }
+  trigger: { kind: cron, expr: "30 16 * * 1-5", tz: "Asia/Kolkata" }
   lifecycle:
     success: null
     invalidation: null
@@ -21,80 +22,55 @@ mandate:
 
 # Hedge Fund Skill Improvement Review
 
-## Intent
+## Runtime semantics
 
-Turn daily office activity into better rules. This review reads the fund book,
-desk records, workflow logs, and transaction outcomes, then writes a precise
-improvement plan for the CEO and desks.
+One invocation is one review. The trigger is policy metadata only. On explicit
+request, `watch_schedule` may install an interval schedule while a scheduler
+owns the pane; it cannot guarantee an exact cron time or offline execution.
+Workflow records persist review state but do not invoke skills. This review may
+recommend edits, but cannot modify package files or silently change mandates.
 
-## What it reviews
+## Evidence collection
 
-- CEO allocation records and the daily `screener-conviction-workflow` output.
-- Desk reports from Short MIS, Long MIS, Long MTF, Investor, Index Options,
-  Stock Options, Commodity, and Stock Futures.
-- Open and closed equity, option, and futures transactions.
-- Transaction records: thesis, stop, target, exit reason, data gaps, and rule
-  breaches.
-- Staged execution quality: initial tranche size, add decisions, reductions,
-  premature full-size entries, and whether active monitoring improved or hurt
-  the outcome.
-- Candidate provenance: whether trades came from the shared screener, a local
-  desk fallback, or a fresh post-screener catalyst.
-- Fund P&L, drawdown, gross exposure, and unused allocation.
+1. Read `fund_summary`, `get_fund_pnl`, and `market_terminal` for the whole
+   selected book.
+2. Read `list_employees`, then iterate relevant `employee_id` values for their
+   research records, equity/option/future transaction lists, positions, and
+   attached transaction records. Do not confuse roster-active with runtime-
+   running.
+3. Use `aitradingoffice_workflows` to inspect due/running/done/failed runs and
+   logs for the review window. Treat missing or contradictory evidence as a
+   finding; do not reconstruct fills or outcomes from narrative.
+4. Join decisions by explicit record, transaction, employee, book, workflow,
+   plan, or delegation identifiers. Separate unrealized from realized P&L and
+   market outcome from process quality.
 
-## Run
+## Assessment
 
-1. Call `groww_resolve_market_time_and_calendar`.
-2. Rehydrate the workflow run when available.
-3. Read fund summary, fund P&L, fund book, account ledger, positions,
-   transactions, transaction records, and recent desk records.
-4. Classify each desk:
+For each desk/process, compare:
 
-```yaml
-desk:
-activity:
-pnl_or_open_risk:
-followed_rules: yes | no | partial
-best_decision:
-worst_decision:
-missed_opportunity:
-data_gap:
-rule_change_needed:
-```
+- mandate/tool compliance and whether the deterministic pipeline was used;
+- entry thesis, stop/target/time-exit plan, additions, reductions, and actual
+  settlement evidence;
+- risk budget versus reserved/realized exposure;
+- stale data, unsupported claims, retries around blocked gates, or missing
+  client checks;
+- shared-screener usefulness, rejected-idea quality, delegation/runtime
+  failures, and report completeness;
+- repeated errors that warrant code or skill changes versus one-off market
+  noise.
 
-5. Identify cross-desk issues:
-   - over-allocation or idle cash;
-   - repeated late exits;
-   - bad symbol selection;
-   - shared screener candidates that were ignored, stale, or missing;
-   - stops too wide/tight;
-   - full-size entries that should have been staged;
-   - adds that increased risk without confirmation;
-   - reductions or exits that were too slow after price movement changed;
-   - option structures harmed by theta/IV;
-   - futures notional/exposure crowding;
-   - news or event risk missed;
-   - tools unavailable or data stale.
-6. Write one AITradingOffice `skill_improvement_review` record:
+Propose only changes supported by at least one concrete evidence ID. Classify
+each as documentation/skill instruction, deterministic code/tool contract,
+office data quality, runtime/supervision, or human policy. Include expected
+benefit, downside, validation test, rollback criterion, and priority. Never
+relax a hard risk boundary to improve backtest or P&L optics.
 
-```yaml
-review_date:
-fund_state:
-desk_scores:
-keep_rules:
-change_rules:
-new_watch_items:
-skill_edit_requests:
-tomorrow_ceo_instructions:
-```
+## Output
 
-7. Send `hedgefund_report` to the CEO pane with the top five changes.
-
-## Guardrails
-
-- Never trade or modify transactions.
-- Do not mark a rule as failed unless the office record shows the rule existed
-  before the decision.
-- Separate bad process from unlucky outcome.
-- Keep recommendations editable: name the exact skill and section that should
-  change when a skill edit is needed.
+Create/update a review research record through `aitradingoffice_hf` with the
+review window, joined evidence IDs, findings, proposed changes, validation
+plan, and unresolved gaps. Update the existing review workflow run when one
+exists. In an Investor pane, send the result with `hedgefund_report`; in a CEO
+pane, return/store it locally because that reporting tool is not part of the
+CEO surface.

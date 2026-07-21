@@ -4,35 +4,35 @@
     {
       "name": "backtest-strategy-lab",
       "kind": "oneshot",
-      "summary": "Backtest a curated catalog of trend, breakout, mean-reversion, volatility-expansion, and opening-range Pine strategies using TradeCLI's TradingView tools.",
+      "summary": "Author or select one parameterized Pine hypothesis through TradeCLI's high-level loader, verify its compiled inputs, and run an approval-gated durable backtest.",
       "author": "TradingSandbox",
       "path": "skills/backtest-strategy-lab/SKILL.md"
     },
     {
       "name": "backtest-fast-sweep",
       "kind": "oneshot",
-      "summary": "Start or resume durable TradingView-only backtest jobs for the compiled current-chart strategy; code chunks parameter, symbol, and timeframe grids and persists AITradingOffice lineage.",
+      "summary": "Build, immutably plan, approve, run, resume, and inspect durable TradingView-only sweeps for the compiled current-chart strategy.",
       "author": "TradingSandbox",
       "path": "skills/backtest-fast-sweep/SKILL.md"
     },
     {
       "name": "investment-committee",
       "kind": "oneshot",
-      "summary": "Evaluate one Indian-listed equity through independent market, fundamentals, news, sentiment-proxy, bull/bear, trader, and risk-committee stages.",
+      "summary": "Evaluate one Indian-listed equity through independently sourced market, fundamentals, news, bull, bear, trader, and risk-chair stages without trading.",
       "author": "TradingSandbox",
       "path": "skills/investment-committee/SKILL.md"
     },
     {
       "name": "screener-conviction-workflow",
       "kind": "oneshot",
-      "summary": "Run named Indian-equity screener views such as high momentum, breakout, RVOL, pullback, bounce, bearish breakdown, and sector rotation, then adapt candidates to CNC, MIS, MTF, futures, options, or index trade kinds.",
+      "summary": "Run reproducible Indian-market screens, validate survivors with current TradingView evidence, and route research cards to cash, MIS, MTF-style, futures, options, or index desks without trading.",
       "author": "TradingSandbox",
       "path": "skills/screener-conviction-workflow/SKILL.md"
     },
     {
       "name": "hedge-fund-ceo-daily-office",
       "kind": "routine",
-      "summary": "Run the daily Hedge Fund CEO office loop: read fund capital and risk, wake/delegate desks, allocate paper budgets, collect reports, and record the daily plan.",
+      "summary": "Run one Hedge Fund CEO office tick: read authoritative book and roster state, route bounded desk tasks, allocate paper-risk envelopes, collect reports, and record the plan.",
       "author": "TradingSandbox",
       "path": "skills/hedge-fund/hedge-fund-ceo-daily-office/SKILL.md"
     },
@@ -67,28 +67,28 @@
     {
       "name": "hedge-fund-option-index-desk",
       "kind": "routine",
-      "summary": "Trade paper index options for NIFTY/BANKNIFTY-style setups with greeks, OI, volatility, premium exposure checks, and AITradingOffice records.",
+      "summary": "Trade paper index options as single-leg long calls or puts using supported contract, greek, premium, spread, risk, and office evidence; keep short or multi-leg structures analysis-only.",
       "author": "TradingSandbox",
       "path": "skills/hedge-fund/hedge-fund-option-index-desk/SKILL.md"
     },
     {
       "name": "hedge-fund-option-stock-desk",
       "kind": "routine",
-      "summary": "Trade paper single-stock options on Indian F&O names with event-aware contract selection, greeks, liquidity checks, and option records.",
+      "summary": "Trade paper single-stock options as single-leg long calls or puts with event-aware contract selection, supported greeks, spread checks, deterministic sizing, and office records.",
       "author": "TradingSandbox",
       "path": "skills/hedge-fund/hedge-fund-option-stock-desk/SKILL.md"
     },
     {
       "name": "hedge-fund-commodity-desk",
       "kind": "routine",
-      "summary": "Trade paper commodity futures or options after resolving exact MCX/F&O contracts, session, liquidity, fund exposure, and macro risk.",
+      "summary": "Trade supported paper commodity futures after resolving the exact MCX/NCDEX contract, venue, session, liquidity, fund exposure, and macro risk; keep commodity options analysis-only.",
       "author": "TradingSandbox",
       "path": "skills/hedge-fund/hedge-fund-commodity-desk/SKILL.md"
     },
     {
       "name": "hedge-fund-stock-futures-desk",
       "kind": "routine",
-      "summary": "Trade paper Indian single-stock futures using trend, OI, liquidity, notional exposure, stops, and fund-risk checks.",
+      "summary": "Trade paper Indian single-stock futures using resolved dated contracts, trend, liquidity, notional/stop exposure, deterministic sizing, and fund-risk checks without claiming OI or margin accounting.",
       "author": "TradingSandbox",
       "path": "skills/hedge-fund/hedge-fund-stock-futures-desk/SKILL.md"
     },

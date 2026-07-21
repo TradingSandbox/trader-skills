@@ -1,6 +1,6 @@
 {
   "name": "trader-skills",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
     "tools": "node scripts/list-tools.mjs",
@@ -14,5 +14,8 @@
     "skills": [
       "./skills"
     ]
+  },
+  "tradecli": {
+    "skillContract": 1
   }
 }

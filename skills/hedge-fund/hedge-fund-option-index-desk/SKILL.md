@@ -1,12 +1,13 @@
 ---
 name: "hedge-fund-option-index-desk"
-description: "Run the Hedge Fund Index Options desk as a daily paper-trading routine in AITradingOffice. Use when the CEO or user assigns capital to consume screener-conviction-workflow index bias and trade NIFTY, BANKNIFTY, FINNIFTY, or other index option trades, including directional option buying, spreads, and tightly risk-capped intraday option ideas; create, monitor, exit, and journal fund-book option paper transactions without broker margin checks."
+description: "Run the Hedge Fund Index Options desk as a daily paper-trading routine in AITradingOffice. Use when the CEO or user assigns capital to consume screener-conviction-workflow index bias; evaluate directional or spread ideas on NIFTY, BANKNIFTY, FINNIFTY, or other supported indices; execute only single-leg long calls or puts resolved by option_scan; size each tranche through strategy; enter and exit only through the deterministic trade pipeline; journal the fund-book transactions; and report results."
 mandate:
   kind: "routine"
   persona: "hedgefund"
+  roles: [trader]
   risk_profile: "aggressive"
   office_tool: "aitradingoffice_hf"
-  allowed_tools: [groww_resolve_market_time_and_calendar, groww_curate_symbols, groww_fetch_curated_fno, groww_get_open_interest_analysis, groww_get_greeks_for_fno_contract, groww_get_greeks_for_fno_symbol, groww_get_atm_straddle_chart, groww_get_payoff_chart_steps, groww_get_quotes_and_depth, groww_get_ltp, news_fetch, stock_trend_snapshot, tv_symbol_search, tv_quote_get, tv_data_get_ohlcv, aitradingoffice_hf, aitradingoffice_workflows, hedgefund_report, watch_schedule]
+  allowed_tools: [aitradingoffice_hf, aitradingoffice_workflows, option_scan, strategy, enter_trade, exit_trade, news_fetch, browser, tv_health_check, tv_symbol_search, tv_symbol_info, tv_chart_set_symbol, tv_chart_set_timeframe, tv_quote_get, tv_depth_get, tv_technicals_get, tv_data_get_ohlcv, tv_options_expirations, tv_options_chain, tv_news_list, tv_news_read, hedgefund_report, watch_schedule]
   allowed_ledgers: [options]
   limits:
     max_trades_per_tick: 2
@@ -23,52 +24,116 @@ mandate:
 
 ## Intent
 
-Express index views with defined or tightly capped risk in the paper fund book.
-The desk must understand direction, volatility, expiry, greeks, and event risk
-before opening any option transaction.
+Express index views with tightly capped premium risk in the hedge-fund paper
+book. Direction, volatility, expiry, contract liquidity, delta, and event risk
+must be understood before entry. Executable ideas are single-leg long calls or
+puts only; multi-leg structures are analysis-only because the pipeline cannot
+book them atomically. The only trade-ledger path is `strategy` to `enter_trade`
+to `exit_trade`.
+
+## Setup
+
+1. Rehydrate workflow state with `aitradingoffice_workflows` when present.
+2. Through `aitradingoffice_hf`, read CEO allocation, fund cash and P&L, open
+   option positions, recent option transactions and records, and the shared
+   screener's current `index_bias`.
+3. Call `tv_health_check` and require the pane's runtime-assigned `target_id`.
+   Before a deep check, set the underlying symbol and timeframe on that target.
+   Pass the same `target_id` to every stateful TradingView call that accepts it.
+   If no target is assigned, stop rather than read another pane's chart.
+4. The manifest trigger is schedule metadata, not a live cron. A manual
+   invocation executes one tick. Call `watch_schedule` only when the user
+   explicitly asks for repetition; it creates an in-process interval that
+   fires only while the current scheduler/runtime remains alive.
 
 ## Tick
 
-1. Rehydrate workflow state, CEO allocation, option positions, option
-   transactions, fund P&L, and the shared `screener-conviction-workflow`
-   `index_bias` when available.
-2. Call `groww_resolve_market_time_and_calendar`; record expiry and time to
-   close.
-3. Pick the trade mode:
-   - `directional_buy`: strong trend/breakout with premium risk capped;
-   - `spread`: directional view with theta control;
-   - `no_trade`: unclear direction, poor liquidity, or event risk.
-4. Use OI, greeks, straddle chart, quotes/depth, index trend, and shared
-   screener `index_bias` to validate the structure.
-5. Reject trades when:
-   - liquidity is poor or spreads are wide;
-   - theta decay dominates the expected move;
-   - stop cannot be expressed as premium, underlying level, or time;
-   - premium exposure exceeds allocation.
-6. Check tradeability, CEO allocation, manifest notional limit, available fund
-   cash, premium exposure, and maximum loss. Do not call broker margin tools.
-7. Enter in parts unless the structure's maximum loss is already fully defined
-   and small. The first paper order should normally be 30-50% of intended
-   premium exposure. Add only after the underlying confirms direction or
-   volatility behaves as expected. Reduce or exit quickly when delta moves
-   against the thesis, theta decay accelerates, IV collapses, spread widens, or
-   the underlying fails the planned level.
-8. Create at most two paper option transactions through
-   `aitradingoffice_hf:create_option_transaction`.
-9. Add transaction records with underlying, expiry, strike, option type,
-   premium, quantity, initial tranche percent, add rules, reduce rules, greeks,
-   stop, target, time exit, max loss, and screener bias reference.
-10. Keep watching underlying price, premium, greeks, spread, and time decay.
-   Add, reduce, or exit through `exit_option_transaction` when stop, target,
-   time decay, volatility crush, failed add condition, or session cutoff
-   invalidates the trade.
-11. Report action, exposure, rejected structures, and lesson learned.
+1. Establish the current India-market timestamp, expiry date, time to expiry,
+   time to session cutoff, and data freshness. If expiry or session state is
+   ambiguous, open no new structure.
+2. Compute available premium and maximum-loss capacity as the minimum of CEO
+   allocation, manifest `max_notional`, available fund cash, and remaining
+   daily-risk budget after all open option exposure.
+3. Choose one mode:
+   - `directional_buy` for an executable single-leg long call or put with
+     premium risk capped at the debit paid;
+   - `spread_analysis_only` when the thesis would require multiple legs; record
+     the analysis but send no component to `strategy` or `enter_trade`;
+   - `no_trade` when direction, volatility, liquidity, or event risk conflicts.
+4. Validate the underlying with the shared `index_bias`, safe TradingView
+   quotes/OHLCV/indicators, and decision-relevant news. Use `option_scan` to
+   resolve the exact expiry, strike, option type, contract symbol, delta/IV
+   fields, and bid/ask-spread evidence. `option_scan` does not establish the
+   current exchange lot size: verify that value against a current authoritative
+   exchange or broker source with `browser`, record the source and as-of date,
+   and stop if it cannot be verified. Never rely on a remembered/default lot.
+5. Reject the proposal when liquidity is poor, spread is wide, theta dominates
+   the expected move, expiry risk is unacceptable, the stop cannot be stated as
+   premium/underlying/time, or aggregate maximum loss exceeds allocation.
+6. Call `aitradingoffice_hf` with `action: list_clients`. Select a concrete
+   client whose status is active and whose allowed instruments and constraints
+   permit this long index option. If none qualifies or the choice is ambiguous,
+   stop. Call `action: check_tradeable` with that client's id, then reconcile
+   the proposed option with fund cash, existing exposure, CEO allocation,
+   manifest notional, premium at risk, and maximum loss. A failed or unreadable
+   gate means skip and report.
+7. Size the first 30-50% premium tranche with `strategy` using
+   `flavor: hedgefund`, `instrument: option`, `side: buy`, exact `underlying`, `expiry`,
+   `strike`, `option_type`, verified `lot_size` and `tv_symbol`, explicit stop
+   and targets, tranche risk, and a stable run/contract/tranche
+   idempotency key. Omit an entry-price override.
+8. Review the risk card and send the returned `enter_trade` payload unchanged
+   to `enter_trade`. Only the selected single long contract may reach this step.
+9. Call `aitradingoffice_hf` with `action: add_transaction_record`,
+   `instrument: option`, and the returned option transaction id:
+
+```yaml
+desk: option_index
+underlying:
+expiry:
+strike:
+option_type:
+side: buy
+premium:
+quantity:
+lot_size_source:
+initial_tranche_pct:
+add_rules:
+reduce_rules:
+delta_and_iv:
+stop:
+target:
+time_exit:
+max_loss:
+idempotency_key:
+screener_bias_record:
+```
+
+10. Add only after the underlying confirms direction and volatility/liquidity
+    remain consistent. Each add is a fresh long-option tranche: re-read
+    exposure, rerun `strategy` with residual risk and a new key, and use only
+    the resulting exact `enter_trade` payload.
+11. Monitor underlying OHLCV, contract marks, spread, delta/IV evidence, time
+    decay, expiry, and the persisted plan. Reduce or exit on stop, target,
+    failed underlying level, volatility crush, excessive time decay, failed add,
+    widening spread, or cutoff. Call `exit_trade` with `dry_run: true` first;
+    repeat with `dry_run: false` only after an unambiguous verdict and quantity
+    reconciliation.
+12. Update transaction records with adds, reductions, exit evidence, and
+    residual premium risk. Send `hedgefund_report` with actions, exposure,
+    rejected structures, data gaps, and one lesson.
 
 ## Guardrails
 
-- Prefer defined-risk structures; naked short option exposure requires explicit
-  CEO allocation and a paper max-loss/exposure record.
-- Do not deploy the full allocation in one order unless the transaction record
-  explicitly justifies it.
-- Do not hold near-expiry long options without a stated reason.
-- Do not trade index options if market direction and volatility view conflict.
+- Execute only single-leg long calls or puts. Multi-leg structures and every
+  short-option leg are analysis-only in this skill.
+- Do not deploy the full allocation in one tranche unless the structure's
+  maximum loss is already fully defined, small, and the record justifies it.
+- Do not hold near-expiry long options without a documented reason and time
+  exit.
+- Stop when the current lot size cannot be verified from an authoritative
+  external source.
+- Do not trade when the index-direction and volatility views conflict.
+- Each successful `enter_trade` tranche counts toward `max_trades_per_tick`.
+- Every entry must be sized by `strategy`, booked by `enter_trade`, and settled
+  by `exit_trade`; `aitradingoffice_hf` is for reads and records, not trade writes.
